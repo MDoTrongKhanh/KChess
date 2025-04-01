@@ -1,0 +1,50 @@
+name: Deploy KChess (Lichess)
+
+on:
+  push:
+    branches:
+      - main  # Chạy khi có thay đổi trên nhánh 'main'
+  pull_request:
+    branches:
+      - main  # Chạy khi có pull request tới nhánh 'main'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest  # Chạy trên môi trường Ubuntu
+
+    steps:
+    # Kiểm tra mã nguồn từ GitHub repository
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    # Cài đặt Java (cho Scala)
+    - name: Set up Java 8
+      uses: actions/setup-java@v2
+      with:
+        java-version: '8'
+
+    # Cài đặt SBT (Scala Build Tool)
+    - name: Install SBT
+      run: |
+        curl -L -o sbt.deb https://github.com/sbt/sbt/releases/download/v1.5.5/sbt-1.5.5.deb
+        sudo dpkg -i sbt.deb
+        sudo apt-get update
+        sudo apt-get install sbt
+
+    # Cài đặt Redis nếu cần (nếu bạn muốn chạy Redis)
+    - name: Install Redis
+      run: |
+        sudo apt-get install redis-server
+
+    # Build ứng dụng Scala (Lichess)
+    - name: Build Lichess (KChess)
+      run: sbt run
+
+    # Triển khai lên Heroku (hoặc DigitalOcean, tùy thuộc bạn sử dụng dịch vụ nào)
+    - name: Deploy to Heroku
+      uses: akshnz/heroku-deploy-action@v1.0.0
+      with:
+        heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
+        heroku_app_name: 'kchess-app'  # Thay bằng tên app Heroku của bạn
+        heroku_email: ${{ secrets.HEROKU_EMAIL }}
+

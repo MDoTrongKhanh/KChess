@@ -1,13 +1,19 @@
 name: Deploy KChess (Lichess)
 
 on:
+  # Trigger khi có push lên nhánh main
   push:
     branches:
-      - main  # Chạy khi có thay đổi trên nhánh 'main'
+      - main
+  # Trigger khi có pull request vào nhánh main
   pull_request:
     branches:
-      - main  # Chạy khi có pull request tới nhánh 'main'
-  workflow_dispatch:
+      - main
+  # Tự động chạy mỗi 4 giờ
+  schedule:
+    - cron: '0 */4 * * *'  # Chạy mỗi 4 giờ
+  # Trigger thủ công khi cần
+  workflow_dispatch:  # Cho phép chạy thủ công
 
 jobs:
   build:
@@ -41,11 +47,10 @@ jobs:
     - name: Build Lichess (KChess)
       run: sbt run
 
-    # Triển khai lên Heroku (hoặc DigitalOcean, tùy thuộc bạn sử dụng dịch vụ nào)
+    # Triển khai lên Heroku (sử dụng heroku/heroku-deploy)
     - name: Deploy to Heroku
-      uses: akshnz/heroku-deploy-action@v1.0.0
+      uses: heroku/heroku-deploy@v3.0.3
       with:
         heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
         heroku_app_name: 'kchess-app'  # Thay bằng tên app Heroku của bạn
         heroku_email: ${{ secrets.HEROKU_EMAIL }}
-
